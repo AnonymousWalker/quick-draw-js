@@ -1,0 +1,107 @@
+<html>
+
+<head>
+    <style>
+        .paint-canvas {
+            border: 1px black solid;
+            display: block;
+            margin: 1rem;
+        }
+
+        .color-picker {
+            margin: 1rem 1rem 0 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <input type="color" class="js-color-picker  color-picker">
+    <input type="range" class="js-line-range" min="1" max="72" value="1">
+    <label class="js-range-value">1</label>Px
+    <canvas class="js-paint paint-canvas" width="300" height="300"></canvas>
+    <button onclick="getPixelData()">Exec</button>
+    <button onclick="clearCanvas()">Reset</button>
+    <script>
+        const paintCanvas = document.querySelector('.js-paint');
+        const context = paintCanvas.getContext('2d');
+        context.lineCap = 'round';
+
+        const colorPicker = document.querySelector('.js-color-picker');
+
+        colorPicker.addEventListener('change', event => {
+            context.strokeStyle = event.target.value;
+        });
+
+        const lineWidthRange = document.querySelector('.js-line-range');
+        const lineWidthLabel = document.querySelector('.js-range-value');
+
+        lineWidthRange.addEventListener('input', event => {
+            const width = event.target.value;
+            lineWidthLabel.innerHTML = width;
+            context.lineWidth = width;
+        });
+
+        let x = 0, y = 0;
+        let isMouseDown = false;
+
+        const stopDrawing = () => { isMouseDown = false; }
+        const startDrawing = event => {
+            isMouseDown = true;
+            [x, y] = [event.offsetX, event.offsetY];
+        }
+        const drawLine = event => {
+            if (isMouseDown) {
+                const newX = event.offsetX;
+                const newY = event.offsetY;
+                context.beginPath();
+                context.moveTo(x, y);
+                context.lineTo(newX, newY);
+                context.stroke();
+                //[x, y] = [newX, newY];
+                x = newX;
+                y = newY;
+            }
+        }
+
+        paintCanvas.addEventListener('mousedown', startDrawing);
+        paintCanvas.addEventListener('mousemove', drawLine);
+        paintCanvas.addEventListener('mouseup', stopDrawing);
+        paintCanvas.addEventListener('mouseout', stopDrawing);
+
+
+        function clearCanvas() {
+            const canvas = document.querySelector('.js-paint');
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function getPixelData() {
+            const canvas = document.querySelector('.js-paint');
+            const imgData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+            const pixels = imgData.data;
+            const pxArray = [];
+            for (let i = 0, j = 0; i + 3 < pixels.length; i++) {
+                pxArray[j] = pixels[i * 4 + 3];
+                j++;
+            }
+
+            console.log(pixels);
+            console.log(pxArray);
+
+            check(pxArray);
+        }
+
+        function check(pixels) {
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(Array.from(pixels))
+            })
+                .then(res => res.json())
+                .then(category => console.log(category));
+        }
+    </script>
+</body>
+
+</html>
