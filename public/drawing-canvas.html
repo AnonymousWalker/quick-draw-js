@@ -17,7 +17,7 @@
             <pre id="output-category"></pre>
         </h4>
     </div>
-    <canvas class="output-canvas paint-canvas" width="300" height="300"></canvas>
+    <canvas class="output-canvas paint-canvas" width="28" height="28"></canvas>
     <input type="number" id="image-id" value="0" />
     <button class="btn" onclick="getImage()">Get Image</button>
     <script>
@@ -105,7 +105,7 @@
             const dimension = canvas.width * canvas.height;
             const pxArray = new Float32Array(dimension);
             for (let i = 0, j = 0; j < dimension; i++) {
-                pxArray[j] = Math.ceil(pixels[i * 4 + 3] / 255);
+                pxArray[j] = pixels[i * 4 + 3] / 255;
                 j++;
             }
 
@@ -160,8 +160,10 @@
         }
 
         function getImage() {
-            const i = document.querySelector("#image-id").value;
-            document.querySelector("#image-id").focus();
+            const idElement = document.querySelector("#image-id");
+            const i = idElement.value;
+            idElement.value++;
+            idElement.focus();
 
             fetch('/fetchimage?i=' + i)
                 .then(res => res.json())

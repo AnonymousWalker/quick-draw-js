@@ -6,16 +6,16 @@ const fs = require('fs');
 // const categories = require('quickdraw.js/src/categories');
 
 // Setup neural network
-const SAMPLES_PER_CATERGORY = 50;
+const SAMPLES_PER_CATERGORY = 500;
 const objects = ['circle', 'triangle', 'square'];
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
-const network = new net.architect.Perceptron(dataSet.input, 784, 392, 196, dataSet.output);
+const network = new net.architect.Perceptron(dataSet.input, 20, 10, dataSet.output);
 
 network.train(dataSet.set, {
   iterations: 100,
   log: 1,
   rate: 0.1,
-  error: 0.0001
+  error: 0.01
 });
 
 const hostname = '127.0.0.1';
@@ -51,7 +51,6 @@ app.get('/fetchimage', (req, res) =>{
     if (req.query['i'] != undefined) {
         i = req.query['i'];
     }
-    console.log('i: ' + i);
     const inOutObj = dataSet.set[i]
     res.send(JSON.stringify(inOutObj))
 })
