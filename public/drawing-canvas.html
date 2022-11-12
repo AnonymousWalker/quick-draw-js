@@ -81,17 +81,31 @@
         function submit() {
             const canvas = document.querySelector(".js-paint");
             const outputCanvas = document.querySelector('.output-canvas');
-            // resize image
+            
+            // ROI - region of interest
             let src = cv.imread(canvas);
             let dst = new cv.Mat();
+        
+            const cropPosition = computeCropArea();
+            let rect = new cv.Rect(
+                cropPosition.west, 
+                cropPosition.north, 
+                cropPosition.east - cropPosition.west, 
+                cropPosition.south - cropPosition.north
+            );
+            dst = src.roi(rect);
+            cv.imshow(outputCanvas, dst);
+
+            src.delete();
+            dst.delete();
+
+            // resize image
+            src = cv.imread(outputCanvas);
+            dst = new cv.Mat();
+
             let dsize = new cv.Size(28, 28);
             cv.resize(src, dst, dsize, 0, 0, cv.INTER_AREA);
             cv.imshow(outputCanvas, dst);
-
-            // ROI
-            // let rect = new cv.Rect(100, 100, 200, 200);
-            // dst = src.roi(rect);
-            // cv.imshow(outputCanvas, dst);
 
             const pixels = getPixelData(outputCanvas);
             console.log(pixels);
@@ -104,9 +118,8 @@
 
             const dimension = canvas.width * canvas.height;
             const pxArray = new Float32Array(dimension);
-            for (let i = 0, j = 0; j < dimension; i++) {
-                pxArray[j] = pixels[i * 4 + 3] / 255;
-                j++;
+            for (let i = 0; i < dimension; i++) {
+                pxArray[i] = Math.ceil(pixels[i * 4 + 3] / 255);
             }
 
             return pxArray;
@@ -184,32 +197,53 @@
                 })
         }
 
-        // function computeCropArea() {
-        //     const canvas = document.querySelector(".js-paint");
-        //     const context = canvas.getContext("2d");
-        //     const h = canvas.height;
-        //     const w= canvas.width;
+        function computeCropArea() {
+            const canvas = document.querySelector(".js-paint");
+            const context = canvas.getContext("2d");
+            const h = canvas.height;
+            const w = canvas.width;
 
-        //     const imgData = context.getImageData(0, 0, w, h);
-        //     const north = [];
-        //     const west = [];
-        //     const south = [];
-        //     const east = [];
+            const imgData = context.getImageData(0, 0, w, h);
+            let north = h;
+            let west = w;
+            let south = -1;
+            let east = -1;
 
-        //     const pxArray = [];
-        //     const dimension = w*h;
-        //     for (let i = 0, j = 0; j < dimension; i++) {
-        //         pxArray[j] = pixels[i * 4 + 3];
-        //         j++;
-        //     }
+            const dimension = w * h;
+            const pxArray = new Float32Array(dimension);
+            for (let i = 0; i < dimension; i++) {
+                pxArray[i] = imgData.data[i * 4 + 3] / 255;
+            }
 
-        //     for (let i = 0; i < pxArray.length; i++) {
-        //         if (imgData[i+3] > 0) {
-        //             north = []
-        //         }
-        //     }
+            for (let i = 0; i < dimension; i++) {
+                if (pxArray[i] == 0) continue;
 
-        // }
+                let pos = { 
+                    x: i % w, 
+                    y: i / w
+                };
+                
+                if (pos.y < north) {
+                    north = pos.y;
+                }
+                if (pos.x < west) {
+                    west = pos.x;
+                }
+                if (pos.y > south) {
+                    south = pos.y;
+                }
+                if (pos.x > east) {
+                    east = pos.x;
+                }
+            }
+
+            return {
+                north: north,
+                west: west,
+                south: south,
+                east: east
+            }
+        }
     </script>
 </body>
 
