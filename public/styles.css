@@ -1,0 +1,35 @@
+.paint-canvas {
+    border: 1px black solid;
+    display: block;
+    margin: 1rem;
+}
+
+.color-picker {
+    margin: 1rem 1rem 0 1rem;
+}
+
+#output-category {
+    background-color: lightgray;
+}
+.in-out-group {
+    display: flex;
+}
+
+.btn {
+    padding: 0.8em 1em;
+    background-color: #a2b4e9;
+    color: black;
+    margin: 5px;
+    width: 100px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .btn:hover {
+    background-color: #c5d4f5;
+  }
+  
+  .btn:active {
+    background-color: #4e65a7;
+  }
