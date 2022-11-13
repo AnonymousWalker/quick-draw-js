@@ -7,9 +7,9 @@ const fs = require('fs');
 
 // Setup neural network
 const SAMPLES_PER_CATERGORY = 500;
-const objects = ['circle', 'triangle', 'square'];
+const objects = ['circle', 'triangle', 'square', 'star'];
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
-const network = new net.architect.Perceptron(dataSet.input, 20, 10, dataSet.output);
+const network = new net.architect.Perceptron(dataSet.input, 30, dataSet.output);
 
 network.train(dataSet.set, {
   iterations: 100,
@@ -34,16 +34,12 @@ app.get('/', (req, res) => {
 app.post('/', (req, res) => {
     const input = req.body;
     const output = network.activate(input);
-    const max = Math.max(...output);
-    const index = output.indexOf(max);
+    const outputMap = {}
+    for (i = 0; i < objects.length; i++) {
+        outputMap[objects[i]] = output[i].toFixed(5);
+    }
 
-    const result = {};
-    output.forEach( (p, index) => {
-        result[objects[index]] = p;
-    });
-    console.log(result);
-
-    res.send(JSON.stringify(result,null, 2));
+    res.send(JSON.stringify(outputMap,null, 2));
 });
 
 app.get('/fetchimage', (req, res) =>{

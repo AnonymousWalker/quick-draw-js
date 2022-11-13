@@ -2,249 +2,44 @@
 
 <head>
     <link rel="stylesheet" href="./styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css"
+        integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
     <script src="./opencv.js" type="text/javascript"></script>
+    <script src="./client.js" type="text/javascript"></script>
+
 </head>
 
 <body>
-    <input type="color" class="js-color-picker  color-picker">
-    <input type="range" class="js-line-range" min="1" max="72" value="1">
-    <label class="js-range-value">30</label>Px
-    <button class="btn" onclick="submit()">Exec</button>
-    <button class="btn" onclick="clearCanvas()">Reset</button>
-    <div class="in-out-group">
-        <canvas class="js-paint paint-canvas" width="600" height="400"></canvas>
-        <h4>Result:
-            <pre id="output-category"></pre>
-        </h4>
+    <div class="top-nav">
+        <h1 class="header">Draw a shape</h1>
     </div>
-    <canvas class="output-canvas paint-canvas" width="28" height="28"></canvas>
-    <input type="number" id="image-id" value="0" />
-    <button class="btn" onclick="getImage()">Get Image</button>
-    <script>
-        document.addEventListener("DOMContentLoaded", setupCanvas());
-        function setupCanvas() {
+    <hr />
+    <div class="main-body">
 
-            const paintCanvas = document.querySelector('.js-paint');
-            const context = paintCanvas.getContext('2d');
-            context.lineCap = 'round';
-
-            const colorPicker = document.querySelector('.js-color-picker');
-
-            colorPicker.addEventListener('change', event => {
-                context.strokeStyle = event.target.value;
-            });
-
-            const lineWidthRange = document.querySelector('.js-line-range');
-            const lineWidthLabel = document.querySelector('.js-range-value');
-
-            lineWidthRange.addEventListener('input', event => {
-                const width = event.target.value;
-                lineWidthLabel.innerHTML = width;
-                context.lineWidth = width;
-            });
-
-            let x = 0, y = 0;
-            let isMouseDown = false;
-
-            const stopDrawing = () => {
-                isMouseDown = false;
-            }
-            const startDrawing = event => {
-                isMouseDown = true;
-                [x, y] = [event.offsetX, event.offsetY];
-            }
-            const drawLine = event => {
-                if (isMouseDown) {
-                    const newX = event.offsetX;
-                    const newY = event.offsetY;
-                    context.beginPath();
-                    context.moveTo(x, y);
-                    context.lineTo(newX, newY);
-                    context.stroke();
-                    //[x, y] = [newX, newY];
-                    x = newX;
-                    y = newY;
-                }
-            }
-
-            paintCanvas.addEventListener('mousedown', startDrawing);
-            paintCanvas.addEventListener('mousemove', drawLine);
-            paintCanvas.addEventListener('mouseup', () => { stopDrawing(); submit() });
-            paintCanvas.addEventListener('mouseout', stopDrawing);
-        }
-
-        function clearCanvas() {
-            const canvas = document.querySelector('.js-paint');
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-        }
-
-        function submit() {
-            const canvas = document.querySelector(".js-paint");
-            const outputCanvas = document.querySelector('.output-canvas');
-            
-            // ROI - region of interest
-            let src = cv.imread(canvas);
-            let dst = new cv.Mat();
-        
-            const cropPosition = computeCropArea();
-            let rect = new cv.Rect(
-                cropPosition.west, 
-                cropPosition.north, 
-                cropPosition.east - cropPosition.west, 
-                cropPosition.south - cropPosition.north
-            );
-            dst = src.roi(rect);
-            cv.imshow(outputCanvas, dst);
-
-            src.delete();
-            dst.delete();
-
-            // resize image
-            src = cv.imread(outputCanvas);
-            dst = new cv.Mat();
-
-            let dsize = new cv.Size(28, 28);
-            cv.resize(src, dst, dsize, 0, 0, cv.INTER_AREA);
-            cv.imshow(outputCanvas, dst);
-
-            const pixels = getPixelData(outputCanvas);
-            console.log(pixels);
-            evaluate(pixels);
-        }
-
-        function getPixelData(canvas) {
-            const imgData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imgData.data;
-
-            const dimension = canvas.width * canvas.height;
-            const pxArray = new Float32Array(dimension);
-            for (let i = 0; i < dimension; i++) {
-                pxArray[i] = Math.ceil(pixels[i * 4 + 3] / 255);
-            }
-
-            return pxArray;
-        }
-
-        function evaluate(pixels) {
-            fetch('/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(Array.from(pixels))
-            })
-                .then(res => res.text())
-                .then(category => {
-                    document.querySelector("#output-category").innerHTML = category
-                });
-        }
-
-        function resizeImage(imgToResize, resizingFactor = 0.5) {
-            const canvas = document.querySelector(".output-canvas");
-            const context = canvas.getContext("2d");
-
-            const newHeight = 28;
-            const newWidth = 28;
-
-            // canvas.width = newWidth;
-            // canvas.height = newHeight;
-
-            context.drawImage(
-                imgToResize,
-                0,
-                0,
-                newWidth,
-                newHeight
-            );
-
-            const imgData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const pixels = imgData.data;
-            const pxArray = [];
-
-            const dimension = canvas.width * canvas.height;
-            for (let i = 0, j = 0; j < dimension; i++) {
-                pxArray[j] = pixels[i * 4 + 3];
-                j++;
-            }
-            console.log(pixels);
-            console.log('size: ' + pxArray.length);
-            console.log(pxArray);
-            return pxArray;
-        }
-
-        function getImage() {
-            const idElement = document.querySelector("#image-id");
-            const i = idElement.value;
-            idElement.value++;
-            idElement.focus();
-
-            fetch('/fetchimage?i=' + i)
-                .then(res => res.json())
-                .then(data => {
-                    const input = data['input'];
-                    const output = data['output'];
-                    console.log(output);
-                    const context = document.querySelector(".output-canvas").getContext('2d');
-                    const imgData = context.createImageData(28, 28);
-
-                    for (let i = 0, j = 0; i < input.length; i++, j += 4) {
-                        imgData.data[j] = 0;
-                        imgData.data[j + 1] = 0;
-                        imgData.data[j + 2] = 0;
-                        imgData.data[j + 3] = input[i] * 255;
-                    }
-                    context.putImageData(imgData, 0, 0);
-                })
-        }
-
-        function computeCropArea() {
-            const canvas = document.querySelector(".js-paint");
-            const context = canvas.getContext("2d");
-            const h = canvas.height;
-            const w = canvas.width;
-
-            const imgData = context.getImageData(0, 0, w, h);
-            let north = h;
-            let west = w;
-            let south = -1;
-            let east = -1;
-
-            const dimension = w * h;
-            const pxArray = new Float32Array(dimension);
-            for (let i = 0; i < dimension; i++) {
-                pxArray[i] = imgData.data[i * 4 + 3] / 255;
-            }
-
-            for (let i = 0; i < dimension; i++) {
-                if (pxArray[i] == 0) continue;
-
-                let pos = { 
-                    x: i % w, 
-                    y: i / w
-                };
-                
-                if (pos.y < north) {
-                    north = pos.y;
-                }
-                if (pos.x < west) {
-                    west = pos.x;
-                }
-                if (pos.y > south) {
-                    south = pos.y;
-                }
-                if (pos.x > east) {
-                    east = pos.x;
-                }
-            }
-
-            return {
-                north: north,
-                west: west,
-                south: south,
-                east: east
-            }
-        }
-    </script>
+        <div class="in-out-group">
+            <div>
+                <input type="color" class="js-color-picker  color-picker">
+                <input type="range" class="js-line-range" min="1" max="72" value="1">
+                <label class="js-range-value">30</label>Px
+                <button class="pure-button" id="reset">Clear</button>
+                <canvas class="js-paint paint-canvas" width="600" height="400"></canvas>
+            </div>
+            <div>
+                <h4>Result:</h4>
+                <canvas id="output-chart"></canvas>
+                <pre id="output-category"></pre>
+            </div>
+        </div>
+        <div style="width: 50%;margin: auto;">
+            <h4>Normalized</h4>
+            <canvas class="output-canvas paint-canvas" width="28" height="28"></canvas>
+            <form class="pure-form">
+                <input type="number" id="image-id" value="0" />
+                <button class="pure-button button-secondary" id="get-img-btn">Get Image</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>
