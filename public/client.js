@@ -222,8 +222,6 @@ function _renderChart(categories) {
     });
 }
 
-
-
 function resizeImage(imgToResize, resizingFactor = 0.5) {
     const canvas = document.querySelector(".output-canvas");
     const context = canvas.getContext("2d");
@@ -254,3 +252,39 @@ function resizeImage(imgToResize, resizingFactor = 0.5) {
     return pxArray;
 }
 
+function rotateCanvas(canvas) {
+    const context = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    const imgData = context.getImageData(0, 0, w, h);
+    const pxData = imgData.data;
+    const bitmap = convertPixelsToBitmap(pxData, w, h);
+
+    // console.log(bitmap)
+    const res = rotateMatrix(bitmap)
+    console.log(res)
+}
+
+function convertPixelsToBitmap (pxData, w, h) {
+    const pxArray = new Int32Array(w*h);
+    for (let i = 0; i < w*h; i++) {
+        pxArray[i] = Math.ceil(pxData[i * 4 + 3] / 255);
+    }
+
+    const bitmap = [];
+    for (let i = 0; i < h; i++) {
+        bitmap[i] = [];
+
+        for (let j = 0; j < w; j++) {
+            bitmap[i][j] = pxArray[i * w + j % w]
+        }
+    }
+    
+    return bitmap
+}
+
+function rotateMatrix(matrix) {
+    return matrix.map((row, i) =>
+          row.map((_, j) => matrix[matrix.length - 1 - j][i])
+        );
+}
