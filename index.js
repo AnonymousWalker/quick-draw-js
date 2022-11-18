@@ -3,11 +3,13 @@ const net = require('neataptic');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
+// const augmentation = require('./public/augmentation.js')
 // const categories = require('quickdraw.js/src/categories');
 
 // Setup neural network
 const SAMPLES_PER_CATERGORY = 500;
 const objects = ['circle', 'triangle', 'square', 'star'];
+objects.forEach(o => quickDraw.import(o, 500))
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
 const network = new net.architect.Perceptron(dataSet.input, 30, dataSet.output);
 
