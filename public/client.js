@@ -12,19 +12,12 @@ function setupCanvas() {
     const paintCanvas = document.querySelector('.js-paint');
     const context = paintCanvas.getContext('2d');
     context.lineCap = 'round';
-
-    const colorPicker = document.querySelector('.js-color-picker');
-
-    colorPicker.addEventListener('change', event => {
-        context.strokeStyle = event.target.value;
-    });
+    context.lineWidth = 5;
 
     const lineWidthRange = document.querySelector('.js-line-range');
-    const lineWidthLabel = document.querySelector('.js-range-value');
 
     lineWidthRange.addEventListener('input', event => {
         const width = event.target.value;
-        lineWidthLabel.innerHTML = width;
         context.lineWidth = width;
     });
 

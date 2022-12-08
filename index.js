@@ -7,16 +7,16 @@ const fs = require('fs');
 // const categories = require('quickdraw.js/src/categories');
 
 // Setup neural network
-const SAMPLES_PER_CATERGORY = 500;
+const SAMPLES_PER_CATERGORY = 1000;
 const objects = ['circle', 'triangle', 'square', 'star'];
-objects.forEach(o => quickDraw.import(o, 500))
+// objects.forEach(o => quickDraw.import(o, 500))
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
 const network = new net.architect.Perceptron(dataSet.input, 30, dataSet.output);
 
 network.train(dataSet.set, {
   iterations: 100,
   log: 1,
-  rate: 0.1,
+  rate: 0.05,
   error: 0.01
 });
 

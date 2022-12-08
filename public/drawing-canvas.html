@@ -19,9 +19,8 @@
 
         <div class="in-out-group">
             <div>
-                <input type="color" class="js-color-picker  color-picker">
-                <input type="range" class="js-line-range" min="1" max="72" value="1">
-                <label class="js-range-value">30</label>Px
+                <label>Size</label>
+                <input type="range" class="js-line-range" min="1" max="15" value="5">
                 <button class="pure-button" id="reset">Clear</button>
                 <canvas class="js-paint paint-canvas" width="600" height="400"></canvas>
             </div>
@@ -33,7 +32,7 @@
         </div>
         <div style="width: 50%;margin: auto;">
             <h4>Normalized</h4>
-            <canvas class="output-canvas paint-canvas" width="28" height="28"></canvas>
+            <canvas class="output-canvas thumbnail-canvas" width="28" height="28"></canvas>
             <form class="pure-form">
                 <input type="number" id="image-id" value="0" />
                 <button class="pure-button button-secondary" id="get-img-btn">Get Image</button>
