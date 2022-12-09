@@ -3,23 +3,23 @@ const net = require('neataptic');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-// const augmentation = require('./public/augmentation.js')
-// const categories = require('quickdraw.js/src/categories');
 
 // Setup neural network
 const SAMPLES_PER_CATERGORY = 2000;
 const objects = ['circle', 'triangle', 'square', 'star'];
-objects.forEach(o => quickDraw.import(o, SAMPLES_PER_CATERGORY))
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
 
 const network = new net.architect.Perceptron(dataSet.input, 30, dataSet.output);
 
-network.train(dataSet.set, {
-  iterations: 100,
-  log: 1,
-  rate: 0.05,
-  error: 0.01
-});
+async function train() {
+    console.log("Traning...")
+    network.train(dataSet.set, {
+        iterations: 100,
+        log: 1,
+        rate: 0.05,
+        error: 0.01
+    });
+}
 
 const hostname = '127.0.0.1';
 const port = 5000;
@@ -42,10 +42,10 @@ app.post('/', (req, res) => {
         outputMap[objects[i]] = output[i].toFixed(5);
     }
 
-    res.send(JSON.stringify(outputMap,null, 2));
+    res.send(JSON.stringify(outputMap, null, 2));
 });
 
-app.get('/fetchimage', (req, res) =>{
+app.get('/fetchimage', (req, res) => {
     let i = 0;
     if (req.query['i'] != undefined) {
         i = req.query['i'];
@@ -56,4 +56,7 @@ app.get('/fetchimage', (req, res) =>{
 
 app.listen(port, () => {
     console.log(`Example app listening: http://${hostname}:${port}`)
+
+    setInterval(train, 5000);
 });
+
