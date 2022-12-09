@@ -2,6 +2,7 @@
     "name": "qd_project",
     "version": "1.0.0",
     "scripts": {
+        "prestart": "node import.js",
         "start": "node index.js"
     },
     "main": "index.js",
