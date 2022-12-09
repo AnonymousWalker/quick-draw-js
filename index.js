@@ -7,7 +7,7 @@ const fs = require('fs');
 // const categories = require('quickdraw.js/src/categories');
 
 // Setup neural network
-const SAMPLES_PER_CATERGORY = 5000;
+const SAMPLES_PER_CATERGORY = 2000;
 const objects = ['circle', 'triangle', 'square', 'star'];
 objects.forEach(o => quickDraw.import(o, SAMPLES_PER_CATERGORY))
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
