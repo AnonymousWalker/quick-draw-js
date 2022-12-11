@@ -3,17 +3,13 @@ const net = require('neataptic');
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-// const augmentation = require('./public/augmentation.js')
-// const categories = require('quickdraw.js/src/categories');
 
 // Setup neural network
-const SAMPLES_PER_CATERGORY = 2000;
+const SAMPLES_PER_CATERGORY = 5000;
 const objects = ['circle', 'triangle', 'square', 'star'];
-objects.forEach(o => quickDraw.import(o, SAMPLES_PER_CATERGORY))
 const dataSet = quickDraw.set(objects.length * SAMPLES_PER_CATERGORY, objects);
 
 const network = new net.architect.Perceptron(dataSet.input, 30, dataSet.output);
-
 network.train(dataSet.set, {
   iterations: 100,
   log: 1,
@@ -27,7 +23,7 @@ const app = express();
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-app.get('/', (req, res) => {
+app.get('/', (_, res) => {
     const html = fs.readFileSync('./public/drawing-canvas.html');
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
